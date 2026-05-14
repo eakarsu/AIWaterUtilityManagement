@@ -214,3 +214,18 @@ CREATE TABLE IF NOT EXISTS reservoirs (
   last_inspection DATE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- AI Results persistence table
+CREATE TABLE IF NOT EXISTS ai_results (
+  id SERIAL PRIMARY KEY,
+  feature_type VARCHAR(100) NOT NULL,
+  entity_id INTEGER,
+  entity_type VARCHAR(100),
+  user_id INTEGER REFERENCES users(id),
+  input_data JSONB,
+  result JSONB NOT NULL,
+  model_used VARCHAR(255),
+  tokens_used INTEGER,
+  processing_time_ms INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

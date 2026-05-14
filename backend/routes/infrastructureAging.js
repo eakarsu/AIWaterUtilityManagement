@@ -2,13 +2,23 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
-const axios = require('axios');
+const aiRateLimiter = require('../middleware/aiRateLimiter');
+const { callOpenRouter, parseAIJson, persistAIResult } = require('../services/openrouter');
 
-// GET /api/infrastructure-aging - list all
+// GET /api/infrastructure-aging - list all with pagination
 router.get('/', auth, async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM infrastructure_aging ORDER BY failure_probability DESC');
-    res.json(result.rows);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+
+    const total = parseInt((await db.query('SELECT COUNT(*) FROM infrastructure_aging')).rows[0].count);
+    const result = await db.query(
+      'SELECT * FROM infrastructure_aging ORDER BY failure_probability DESC LIMIT $1 OFFSET $2',
+      [limit, offset]
+    );
+
+    res.json({ data: result.rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (err) {
     console.error('Error fetching infrastructure records:', err);
     res.status(500).json({ error: 'Server error' });
@@ -19,9 +29,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM infrastructure_aging WHERE id = $1', [req.params.id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Infrastructure record not found' });
-    }
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Infrastructure record not found' });
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error fetching infrastructure record:', err);
@@ -91,10 +99,7 @@ router.put('/:id', auth, async (req, res) => {
        break_history, priority, req.params.id]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Infrastructure record not found' });
-    }
-
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Infrastructure record not found' });
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error updating infrastructure record:', err);
@@ -106,9 +111,7 @@ router.put('/:id', auth, async (req, res) => {
 router.delete('/:id', auth, async (req, res) => {
   try {
     const result = await db.query('DELETE FROM infrastructure_aging WHERE id = $1 RETURNING *', [req.params.id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Infrastructure record not found' });
-    }
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Infrastructure record not found' });
     res.json({ message: 'Infrastructure record deleted', record: result.rows[0] });
   } catch (err) {
     console.error('Error deleting infrastructure record:', err);
@@ -116,61 +119,93 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// POST /api/infrastructure-aging/:id/analyze - AI analysis
-router.post('/:id/analyze', auth, async (req, res) => {
+// POST /api/infrastructure-aging/:id/analyze - Deep AI analysis with JSON output
+router.post('/:id/analyze', auth, aiRateLimiter, async (req, res) => {
   try {
     const record = await db.query('SELECT * FROM infrastructure_aging WHERE id = $1', [req.params.id]);
-    if (record.rows.length === 0) {
-      return res.status(404).json({ error: 'Infrastructure record not found' });
-    }
+    if (record.rows.length === 0) return res.status(404).json({ error: 'Infrastructure record not found' });
 
     const data = record.rows[0];
 
-    const promptText = `Analyze the following water infrastructure asset for aging assessment, failure risk, and capital improvement planning.
+    // Query related assets for context
+    const sameTypeAssets = await db.query(
+      'SELECT * FROM infrastructure_aging WHERE asset_type = $1 AND id != $2 ORDER BY failure_probability DESC LIMIT 5',
+      [data.asset_type, data.id]
+    );
+    const recentLeaks = await db.query(
+      'SELECT * FROM leak_detections WHERE zone_name ILIKE $1 ORDER BY detected_at DESC LIMIT 3',
+      [`%${data.location?.split(' ')[0] || ''}%`]
+    );
 
-Asset ID: ${data.asset_id}
-Asset Type: ${data.asset_type}
-Material: ${data.material}
-Installation Date: ${data.install_date}
-Age: ${data.age_years} years
-Condition Score: ${data.condition_score}/10
-Failure Probability: ${(data.failure_probability * 100).toFixed(1)}%
-Replacement Cost: $${data.replacement_cost ? Number(data.replacement_cost).toLocaleString() : 'N/A'}
-Last Inspection: ${data.last_inspection}
-Location: ${data.location}
-Diameter: ${data.diameter_inches ? data.diameter_inches + ' inches' : 'N/A'}
-Length: ${data.length_feet ? data.length_feet + ' feet' : 'N/A'}
-Break History: ${data.break_history} recorded breaks
-Current Priority: ${data.priority}
+    const aiResult = await callOpenRouter([
+      {
+        role: 'system',
+        content: 'You are a water utility infrastructure engineer with expertise in asset management and failure prediction. Always respond with valid JSON.'
+      },
+      {
+        role: 'user',
+        content: `Analyze this water infrastructure asset for aging and failure risk.
 
-Please provide a comprehensive infrastructure aging analysis including:
-1) Remaining Useful Life Estimate - Based on material type, age, condition score, and break history, estimate years of remaining service life
-2) Failure Risk Assessment - Evaluate the probability and consequences of failure, including potential for service disruption and property damage
-3) Material-Specific Concerns - Known degradation patterns for ${data.material} pipes/assets of this age
-4) Prioritization Recommendation - Should this asset be prioritized for replacement, rehabilitation, or continued monitoring? Justify the recommendation
-5) Rehabilitation Options - Available rehabilitation methods (e.g., CIPP lining, slip lining, cathodic protection) and their cost-effectiveness
-6) Capital Planning Recommendation - When should this asset be budgeted for replacement in the Capital Improvement Program (CIP)?
-7) Risk Mitigation Measures - Interim measures to reduce failure risk before replacement/rehabilitation
+Asset Details:
+- Asset ID: ${data.asset_id}
+- Asset Type: ${data.asset_type}
+- Material: ${data.material}
+- Installation Date: ${data.install_date}
+- Age: ${data.age_years} years
+- Condition Score: ${data.condition_score}/10
+- Current Failure Probability: ${(data.failure_probability * 100).toFixed(1)}%
+- Replacement Cost: $${data.replacement_cost ? Number(data.replacement_cost).toLocaleString() : 'N/A'}
+- Last Inspection: ${data.last_inspection}
+- Location: ${data.location}
+- Diameter: ${data.diameter_inches ? data.diameter_inches + ' inches' : 'N/A'}
+- Length: ${data.length_feet ? data.length_feet + ' feet' : 'N/A'}
+- Break History: ${data.break_history} recorded breaks
+- Current Priority: ${data.priority}
 
-Format your response in clear, labeled sections.`;
+Similar assets in system (${sameTypeAssets.rows.length}): ${JSON.stringify(sameTypeAssets.rows.map(r => ({
+  id: r.asset_id, age: r.age_years, condition: r.condition_score, failure_prob: r.failure_probability, breaks: r.break_history
+})))}
 
-    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-      model: process.env.OPENROUTER_MODEL,
-      messages: [{ role: 'user', content: promptText }]
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json'
+Recent leaks in area: ${JSON.stringify(recentLeaks.rows.map(r => ({ zone: r.zone_name, severity: r.severity, date: r.detected_at })))}
+
+Respond with this JSON:
+{
+  "remaining_useful_life_years": 0,
+  "failure_probability_updated": 0.0,
+  "failure_risk_level": "low|medium|high|critical",
+  "risk_consequences": "description of failure impact",
+  "material_specific_concerns": ["concern 1", "concern 2"],
+  "recommended_action": "replace|rehabilitate|monitor",
+  "recommended_action_timeline": "immediate|within_1_year|within_3_years|within_5_years",
+  "rehabilitation_options": [{"method": "", "cost": 0, "extends_life_years": 0, "effectiveness": "low|medium|high"}],
+  "capital_planning_year": 2025,
+  "risk_mitigation_measures": ["measure 1", "measure 2"],
+  "inspection_frequency_recommendation": "monthly|quarterly|annual",
+  "priority_score": 0-100,
+  "replacement_urgency": "low|medium|high|emergency",
+  "estimated_annual_risk_cost": 0
+}`
       }
+    ]);
+
+    const parsedResult = parseAIJson(aiResult.content);
+
+    await db.query('UPDATE infrastructure_aging SET ai_analysis = $1 WHERE id = $2', [aiResult.content, data.id]);
+    await persistAIResult({
+      featureType: 'infrastructure_aging_analysis',
+      entityId: data.id,
+      entityType: 'infrastructure_aging',
+      userId: req.user.id,
+      inputData: { asset_id: data.asset_id, material: data.material, age_years: data.age_years },
+      result: parsedResult,
+      model: aiResult.model,
+      tokensUsed: aiResult.tokensUsed,
+      processingTimeMs: aiResult.processingTimeMs
     });
 
-    const aiResult = response.data.choices[0].message.content;
+    const updated = await db.query('SELECT * FROM infrastructure_aging WHERE id = $1', [data.id]);
 
-    await db.query('UPDATE infrastructure_aging SET ai_analysis = $1 WHERE id = $2', [aiResult, req.params.id]);
-
-    const updated = await db.query('SELECT * FROM infrastructure_aging WHERE id = $1', [req.params.id]);
-
-    res.json({ analysis: aiResult, record: updated.rows[0] });
+    res.json({ success: true, analysis: parsedResult, raw: aiResult.content, record: updated.rows[0] });
   } catch (err) {
     console.error('Error analyzing infrastructure:', err);
     res.status(500).json({ error: 'AI analysis failed', details: err.message });

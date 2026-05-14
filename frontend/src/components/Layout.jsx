@@ -3,16 +3,18 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Droplets, LayoutDashboard, Search, TrendingUp, Shield, Building2,
   AlertTriangle, Beaker, Users, Gauge, ClipboardList, PipetteIcon,
-  Zap, Database, LogOut, Waves
+  Zap, Database, LogOut, Waves, Siren, Sparkles
 } from 'lucide-react';
 
 const aiLinks = [
+  { to: '/ai-insights', icon: Sparkles, label: 'AI Insights' },
   { to: '/leak-detection', icon: Search, label: 'Leak Detection' },
   { to: '/demand-forecast', icon: TrendingUp, label: 'Demand Forecasting' },
   { to: '/water-quality', icon: Shield, label: 'Water Quality' },
   { to: '/infrastructure-aging', icon: Building2, label: 'Infrastructure Aging' },
   { to: '/anomaly-detection', icon: AlertTriangle, label: 'Anomaly Detection' },
   { to: '/treatment-optimization', icon: Beaker, label: 'Treatment Optimization' },
+  { to: '/emergency-response', icon: Siren, label: 'Emergency Response' },
 ];
 
 const opsLinks = [
