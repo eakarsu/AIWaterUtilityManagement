@@ -62,6 +62,9 @@ app.use('/api/ai/anomaly-analyzer', require('./routes/aiAnomalyAnalyzer'));
 app.use('/api/ai/results', require('./routes/aiResults'));
 app.use('/api/custom', require('./routes/customFeatures'));
 
+// Custom Views (2 VIZ + 2 NON-VIZ) — must be registered BEFORE the 404 handler.
+app.use('/api/custom-views', require('./routes/customViews'));
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -26,6 +26,10 @@ const opsLinks = [
   { to: '/reservoirs', icon: Database, label: 'Reservoirs' },
 ];
 
+const customViewLinks = [
+  { to: '/custom-views', icon: Waves, label: 'Water Views' },
+];
+
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -71,6 +75,19 @@ export default function Layout({ children }) {
           <div className="sidebar-section">
             <div className="sidebar-section-title">Operations Management</div>
             {opsLinks.map(link => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
+                <link.icon size={18} /> {link.label}
+              </NavLink>
+            ))}
+          </div>
+
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">Custom Views</div>
+            {customViewLinks.map(link => (
               <NavLink
                 key={link.to}
                 to={link.to}

@@ -18,6 +18,7 @@ import PumpStationsPage from './pages/PumpStationsPage';
 import ReservoirsPage from './pages/ReservoirsPage';
 import EmergencyResponsePage from './pages/EmergencyResponsePage';
 import AIInsightsPage from './pages/AIInsightsPage';
+import CustomViewsPage from './pages/CustomViewsPage';
 
 // // === Batch 09 Gaps & Frontend Mounts ===
 const RealTimeMultiSensorFusionFlowPressureChlorineTurbidiCfs = React.lazy(() => import('./pages/Batch09/RealTimeMultiSensorFusionFlowPressureChlorineTurbidiCfs'));
@@ -71,6 +72,7 @@ export default function App() {
         <Route path="/reservoirs" element={<ProtectedRoute><ReservoirsPage /></ProtectedRoute>} />
         <Route path="/emergency-response" element={<ProtectedRoute><EmergencyResponsePage /></ProtectedRoute>} />
         <Route path="/ai-insights" element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
+        <Route path="/custom-views" element={<ProtectedRoute><CustomViewsPage /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       
       {/* // === Batch 09 Gaps & Frontend Mounts === */}
