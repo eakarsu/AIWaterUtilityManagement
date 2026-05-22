@@ -20,6 +20,11 @@ import EmergencyResponsePage from './pages/EmergencyResponsePage';
 import AIInsightsPage from './pages/AIInsightsPage';
 import CustomViewsPage from './pages/CustomViewsPage';
 
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
+import TimelineView from './pages/TimelineView';
+
 // // === Batch 09 Gaps & Frontend Mounts ===
 const RealTimeMultiSensorFusionFlowPressureChlorineTurbidiCfs = React.lazy(() => import('./pages/Batch09/RealTimeMultiSensorFusionFlowPressureChlorineTurbidiCfs'));
 const WaterDemandNowcastingFromWeatherEventsTimeOfDayCfs = React.lazy(() => import('./pages/Batch09/WaterDemandNowcastingFromWeatherEventsTimeOfDayCfs'));
@@ -56,6 +61,10 @@ export default function App() {
         }}
       />
       <Routes>
+        <Route path="/insights/timeline" element={<ProtectedRoute><TimelineView /></ProtectedRoute>} />
+        <Route path="/codex/custom-viz" element={<ProtectedRoute><CodexCustomVizFeature /></ProtectedRoute>} />
+        <Route path="/codex/operations" element={<ProtectedRoute><CodexOperationsFeature /></ProtectedRoute>} />
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/leak-detection" element={<ProtectedRoute><LeakDetectionPage /></ProtectedRoute>} />
