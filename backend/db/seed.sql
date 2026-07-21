@@ -1,12 +1,7 @@
 -- AI Water Utility Management System - Seed Data
 
--- Default admin user (password: admin123)
-INSERT INTO users (email, password, name, role) VALUES
-('admin@waterutility.com', '$2a$10$W18StyKAG5ih5Pzdy7TCoe9ymnM5SlCageVj6MwZS09rF1KAs786G', 'Admin User', 'admin'),
-('jsmith@waterutility.com', '$2a$10$W18StyKAG5ih5Pzdy7TCoe9ymnM5SlCageVj6MwZS09rF1KAs786G', 'John Smith', 'operator'),
-('mjones@waterutility.com', '$2a$10$W18StyKAG5ih5Pzdy7TCoe9ymnM5SlCageVj6MwZS09rF1KAs786G', 'Maria Jones', 'manager'),
-('tbrown@waterutility.com', '$2a$10$W18StyKAG5ih5Pzdy7TCoe9ymnM5SlCageVj6MwZS09rF1KAs786G', 'Tom Brown', 'operator')
-ON CONFLICT (email) DO NOTHING;
+-- This fixture intentionally contains no login credentials. Provision identities
+-- through the authenticated deployment workflow, never through static SQL.
 
 -- Leak Detections (15+ records)
 INSERT INTO leak_detections (zone_name, sensor_id, pressure_psi, flow_rate_gpm, normal_pressure, normal_flow, pressure_drop_pct, flow_anomaly_pct, status, severity, detected_at, location_lat, location_lng) VALUES

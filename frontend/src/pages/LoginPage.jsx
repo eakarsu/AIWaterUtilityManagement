@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Droplets, LogIn, Zap } from 'lucide-react';
+import { Droplets, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -24,14 +24,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickLogin = () => {
-    setEmail('admin@waterutility.com');
-    setPassword('admin123');
-    setTimeout(() => {
-      document.getElementById('login-form').requestSubmit();
-    }, 100);
   };
 
   return (
@@ -186,32 +178,6 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        {/* Quick Login */}
-        <button
-          onClick={handleQuickLogin}
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '12px',
-            marginTop: '12px',
-            background: 'rgba(0, 180, 216, 0.08)',
-            border: '1px dashed rgba(0, 180, 216, 0.35)',
-            borderRadius: '10px',
-            color: '#00b4d8',
-            fontSize: '13px',
-            fontWeight: 500,
-            cursor: loading ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            transition: 'background 0.2s',
-          }}
-        >
-          <Zap size={16} />
-          Quick Login (Demo)
-        </button>
 
         <p
           style={{

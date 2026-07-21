@@ -6,9 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "db:init": "psql -f db/schema.sql && psql -f db/seed.sql",
-    "db:schema": "psql -f db/schema.sql",
-    "db:seed": "psql -f db/seed.sql"
+    "db:init": "psql -v ON_ERROR_STOP=1 -f db/schema.sql",
+    "db:schema": "psql -v ON_ERROR_STOP=1 -f db/schema.sql",
+    "db:seed": "psql -v ON_ERROR_STOP=1 -f db/seed.sql",
+    "create-admin": "node scripts/createAdmin.js"
   },
   "dependencies": {
     "axios": "^1.7.2",
