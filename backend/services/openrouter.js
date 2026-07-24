@@ -3,6 +3,7 @@ const db = require('../db');
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022';
+const OPENROUTER_BASE_URL = String(process.env.OPENROUTER_BASE_URL || '').replace(/\/$/, '');
 
 function parseAIJson(text) {
   if (!text) return null;
@@ -15,8 +16,11 @@ function parseAIJson(text) {
 }
 
 async function callOpenRouter(messages) {
+  if (!OPENROUTER_API_KEY || !OPENROUTER_MODEL || !OPENROUTER_BASE_URL) {
+    throw new Error('OpenRouter configuration is required');
+  }
   const startTime = Date.now();
-  const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await axios.post(`${OPENROUTER_BASE_URL}/chat/completions`, {
     model: OPENROUTER_MODEL,
     messages,
     response_format: { type: 'json_object' }
@@ -41,16 +45,12 @@ async function callOpenRouter(messages) {
 }
 
 async function persistAIResult({ featureType, entityId, entityType, userId, inputData, result, model, tokensUsed, processingTimeMs }) {
-  try {
-    await db.query(
-      `INSERT INTO ai_results (feature_type, entity_id, entity_type, user_id, input_data, result, model_used, tokens_used, processing_time_ms)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [featureType, entityId || null, entityType || null, userId || null,
-       JSON.stringify(inputData), JSON.stringify(result), model, tokensUsed, processingTimeMs]
-    );
-  } catch (err) {
-    console.error('Failed to persist AI result:', err.message);
-  }
+  await db.query(
+    `INSERT INTO ai_results (feature_type, entity_id, entity_type, user_id, input_data, result, model_used, tokens_used, processing_time_ms)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    [featureType, entityId || null, entityType || null, userId || null,
+     JSON.stringify(inputData), JSON.stringify(result), model, tokensUsed, processingTimeMs]
+  );
 }
 
 module.exports = { callOpenRouter, parseAIJson, persistAIResult, OPENROUTER_MODEL };

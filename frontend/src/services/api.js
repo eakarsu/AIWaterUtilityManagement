@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || '/api' });
+const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || '' });
 
 api.interceptors.request.use((config) => {
+  if (config.url && !config.url.startsWith('/api/')) config.url = `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;

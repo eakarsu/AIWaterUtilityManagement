@@ -33,6 +33,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api', auth);
 app.use('/api/governance', governanceRouter);
+app.use('/api/runtime-ai/leak-advice', require('./routes/aiLeakAnalyzer'));
 
 const operationalRoutes = [
   ['/api/dashboard', './routes/dashboard'], ['/api/customers', './routes/customers'],
