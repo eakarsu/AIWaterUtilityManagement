@@ -29,7 +29,9 @@ export default function InfrastructureAgingPage() {
   const fetchItems = async () => {
     try {
       const { data } = await api.get('/infrastructure-aging');
-      setItems(data);
+      const infrastructure = Array.isArray(data) ? data : data?.data;
+      if (!Array.isArray(infrastructure)) throw new Error('Invalid infrastructure response');
+      setItems(infrastructure);
     } catch {
       toast.error('Failed to load infrastructure data');
     } finally {

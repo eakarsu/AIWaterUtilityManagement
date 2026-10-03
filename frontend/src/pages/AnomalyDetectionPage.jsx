@@ -28,7 +28,9 @@ export default function AnomalyDetectionPage() {
   const fetchItems = async () => {
     try {
       const { data } = await api.get('/anomaly-detection');
-      setItems(data);
+      const anomalies = Array.isArray(data) ? data : data?.data;
+      if (!Array.isArray(anomalies)) throw new Error('Invalid anomaly response');
+      setItems(anomalies);
     } catch {
       toast.error('Failed to load anomaly data');
     } finally {
