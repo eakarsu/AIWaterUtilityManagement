@@ -1,4 +1,5 @@
 import { Sparkles, Brain, AlertCircle, CheckCircle, TrendingUp, Shield } from 'lucide-react';
+import FormattedAIReport from './FormattedAIReport';
 
 const SECTION_ICONS = {
   risk: AlertCircle,
@@ -126,6 +127,13 @@ export default function AIAnalysisDisplay({ analysis, timestamp }) {
     return sections.map((section, i) => parseSection(section, i));
   };
 
+  let structured = null;
+  if (typeof analysis === 'string' && /^[\[{]/.test(analysis.trim())) {
+    try { structured = JSON.parse(analysis); } catch (_) { /* Keep prose display for non-JSON responses. */ }
+  } else if (analysis && typeof analysis === 'object') {
+    structured = analysis;
+  }
+
   return (
     <div className="ai-analysis-card">
       <div className="ai-analysis-header">
@@ -134,11 +142,11 @@ export default function AIAnalysisDisplay({ analysis, timestamp }) {
         </div>
         <div className="ai-analysis-header-text">
           <h3>AI Analysis</h3>
-          <span className="text-muted text-sm">Powered by Claude AI</span>
+          <span className="text-muted text-sm">AI provider report</span>
         </div>
       </div>
       <div className="ai-analysis-body">
-        {formatAnalysis(analysis)}
+        {structured !== null ? <FormattedAIReport response={structured} title="AI Analysis" /> : formatAnalysis(String(analysis))}
       </div>
       {timestamp && (
         <div className="ai-analysis-footer">

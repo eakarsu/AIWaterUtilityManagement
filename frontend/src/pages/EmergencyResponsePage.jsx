@@ -1,3 +1,5 @@
+import FormattedAIReport from "../components/FormattedAIReport";
+import NativeAIControls from "../components/NativeAIControls.jsx";
 import React, { useState } from 'react';
 import { Siren, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -24,10 +26,11 @@ export default function EmergencyResponsePage() {
     try {
       const { data } = await api.post('/ai/emergency-response', {
         ...form,
-        affected_population: Number(form.affected_population) || undefined,
+        affected_population: form.affected_population === '' ? undefined : Number(form.affected_population),
       });
       setResult(data);
-      toast.success('Response plan generated');
+      if (data.unavailable) toast('AI provider unavailable; no plan was generated.');
+      else toast.success('Response plan generated');
     } catch (err) {
       const msg = err.response?.data?.error || err.message || 'Request failed';
       setError(msg);
@@ -48,10 +51,11 @@ export default function EmergencyResponsePage() {
 
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>
         <form onSubmit={submit}>
+<NativeAIControls busy={loading} context="WaterUtilityManagement">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
             <div className="form-group">
               <label>Incident Type</label>
-              <select value={form.incident_type} onChange={set('incident_type')}>
+              <select data-ai-field={"incident_type"} value={form.incident_type} onChange={set('incident_type')}>
                 <option value="main_break">Main Break</option>
                 <option value="contamination">Contamination Event</option>
                 <option value="pump_failure">Pump Station Failure</option>
@@ -63,7 +67,7 @@ export default function EmergencyResponsePage() {
             </div>
             <div className="form-group">
               <label>Severity</label>
-              <select value={form.severity} onChange={set('severity')}>
+              <select data-ai-field={"severity"} value={form.severity} onChange={set('severity')}>
                 <option value="low">Low</option>
                 <option value="moderate">Moderate</option>
                 <option value="high">High</option>
@@ -72,19 +76,19 @@ export default function EmergencyResponsePage() {
             </div>
             <div className="form-group">
               <label>Location</label>
-              <input value={form.location} onChange={set('location')} placeholder="e.g. Zone 4, Riverside Pump Station" />
+              <input data-ai-field={"location"} value={form.location} onChange={set('location')} placeholder="e.g. Zone 4, Riverside Pump Station" />
             </div>
             <div className="form-group">
               <label>Affected Population</label>
-              <input type="number" value={form.affected_population} onChange={set('affected_population')} placeholder="e.g. 12000" />
+              <input data-ai-field={"affected_population"} type="number" value={form.affected_population} onChange={set('affected_population')} placeholder="e.g. 12000" />
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label>Description *</label>
-              <textarea rows={3} value={form.description} onChange={set('description')} required />
+              <textarea data-ai-field={"description"} rows={3} value={form.description} onChange={set('description')} required />
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label>Resource / Time Constraints</label>
-              <textarea rows={2} value={form.constraints} onChange={set('constraints')} placeholder="Crew availability, backup capacity, regulatory deadlines..." />
+              <textarea data-ai-field={"constraints"} rows={2} value={form.constraints} onChange={set('constraints')} placeholder="Crew availability, backup capacity, regulatory deadlines..." />
             </div>
           </div>
           <div style={{ marginTop: 12 }}>
@@ -92,7 +96,8 @@ export default function EmergencyResponsePage() {
               {loading ? (<><Loader2 size={14} className="spin" /> Planning…</>) : 'Generate Response Plan'}
             </button>
           </div>
-        </form>
+        </NativeAIControls>
+</form>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -100,11 +105,7 @@ export default function EmergencyResponsePage() {
       {result && (
         <div className="card" style={{ padding: 20 }}>
           <h3>Response Plan</h3>
-          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 13, background: '#0f172a08', padding: 12, borderRadius: 8 }}>
-            {typeof (result.plan || result.result) === 'string'
-              ? (result.plan || result.result)
-              : JSON.stringify(result, null, 2)}
-          </pre>
+          <FormattedAIReport response={result.plan ?? result.result ?? result} />
         </div>
       )}
     </div>

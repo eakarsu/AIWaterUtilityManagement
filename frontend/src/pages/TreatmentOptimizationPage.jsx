@@ -29,7 +29,7 @@ export default function TreatmentOptimizationPage() {
   const fetchItems = async () => {
     try {
       const { data } = await api.get('/treatment-optimization');
-      setItems(data);
+      setItems(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []);
     } catch {
       toast.error('Failed to load treatment data');
     } finally {
@@ -59,7 +59,7 @@ export default function TreatmentOptimizationPage() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete treatment record for ${selectedItem.plant_name}?`)) return;
     try {
-      await api.delete(`/treatment-optimization/${selectedItem._id}`);
+      await api.delete(`/treatment-optimization/${selectedItem.id}`);
       toast.success('Treatment record deleted');
       setShowDetail(false);
       setSelectedItem(null);
@@ -73,7 +73,7 @@ export default function TreatmentOptimizationPage() {
     e.preventDefault();
     try {
       if (editMode) {
-        const { data } = await api.put(`/treatment-optimization/${selectedItem._id}`, formData);
+        const { data } = await api.put(`/treatment-optimization/${selectedItem.id}`, formData);
         toast.success('Treatment record updated');
         setSelectedItem(data);
       } else {
@@ -90,9 +90,10 @@ export default function TreatmentOptimizationPage() {
   const handleAnalyze = async () => {
     setAnalyzing(true);
     try {
-      const { data } = await api.post(`/treatment-optimization/${selectedItem._id}/analyze`);
-      setSelectedItem(data);
-      toast.success('AI analysis complete');
+      const { data } = await api.post(`/treatment-optimization/${selectedItem.id}/analyze`);
+      setSelectedItem(data.record || data.data || data);
+      if (data.unavailable) toast('AI provider unavailable; no analysis was saved.');
+      else toast.success('AI analysis complete');
       fetchItems();
     } catch {
       toast.error('AI analysis failed');
@@ -127,8 +128,8 @@ export default function TreatmentOptimizationPage() {
             </thead>
             <tbody>
               {items.map(item => (
-                <tr key={item._id} onClick={() => handleRowClick(item)}
-                  className={selectedItem?._id === item._id ? 'row-selected' : ''}
+                <tr key={item.id} onClick={() => handleRowClick(item)}
+                  className={selectedItem?.id === item.id ? 'row-selected' : ''}
                   style={{ cursor: 'pointer' }}>
                   <td>{item.plant_name}</td>
                   <td>{item.process_stage}</td>

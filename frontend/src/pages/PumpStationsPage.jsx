@@ -27,7 +27,7 @@ export default function PumpStationsPage() {
     try {
       setLoading(true);
       const res = await api.get('/api/pump-stations');
-      setStations(res.data);
+      setStations(Array.isArray(res.data) ? res.data : Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       toast.error('Failed to load pump stations');
     } finally {

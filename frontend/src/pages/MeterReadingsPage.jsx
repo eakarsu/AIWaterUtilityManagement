@@ -25,7 +25,7 @@ export default function MeterReadingsPage() {
     setLoading(true);
     try {
       const { data } = await api.get('/api/meter-readings');
-      setItems(Array.isArray(data) ? data : data.data || []);
+      setItems(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []);
     } catch {
       toast.error('Failed to load meter readings');
     } finally {
@@ -33,7 +33,7 @@ export default function MeterReadingsPage() {
     }
   };
 
-  const handleSelect = (item) => setSelected(selected?._id === item._id ? null : item);
+  const handleSelect = (item) => setSelected(selected?.id === item.id ? null : item);
 
   const openCreate = () => {
     setForm({ ...emptyForm });
@@ -61,7 +61,7 @@ export default function MeterReadingsPage() {
   const handleDelete = async () => {
     if (!selected || !window.confirm('Delete this meter reading?')) return;
     try {
-      await api.delete(`/api/meter-readings/${selected._id}`);
+      await api.delete(`/api/meter-readings/${selected.id}`);
       toast.success('Meter reading deleted');
       setSelected(null);
       fetchItems();
@@ -74,7 +74,7 @@ export default function MeterReadingsPage() {
     e.preventDefault();
     try {
       if (editing) {
-        await api.put(`/api/meter-readings/${selected._id}`, form);
+        await api.put(`/api/meter-readings/${selected.id}`, form);
         toast.success('Meter reading updated');
       } else {
         await api.post('/api/meter-readings', form);
@@ -122,8 +122,8 @@ export default function MeterReadingsPage() {
                 <tr><td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#7a8ba8' }}>No meter readings found</td></tr>
               ) : items.map(item => (
                 <tr
-                  key={item._id}
-                  className={selected?._id === item._id ? 'row-selected' : ''}
+                  key={item.id}
+                  className={selected?.id === item.id ? 'row-selected' : ''}
                   onClick={() => handleSelect(item)}
                   style={{ cursor: 'pointer' }}
                 >

@@ -60,7 +60,7 @@ export default function AnomalyDetectionPage() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete anomaly for meter ${selectedItem.meter_id}?`)) return;
     try {
-      await api.delete(`/anomaly-detection/${selectedItem._id}`);
+      await api.delete(`/anomaly-detection/${selectedItem.id}`);
       toast.success('Anomaly record deleted');
       setShowDetail(false);
       setSelectedItem(null);
@@ -74,7 +74,7 @@ export default function AnomalyDetectionPage() {
     e.preventDefault();
     try {
       if (editMode) {
-        const { data } = await api.put(`/anomaly-detection/${selectedItem._id}`, formData);
+        const { data } = await api.put(`/anomaly-detection/${selectedItem.id}`, formData);
         toast.success('Anomaly updated');
         setSelectedItem(data);
       } else {
@@ -91,9 +91,10 @@ export default function AnomalyDetectionPage() {
   const handleAnalyze = async () => {
     setAnalyzing(true);
     try {
-      const { data } = await api.post(`/anomaly-detection/${selectedItem._id}/analyze`);
-      setSelectedItem(data);
-      toast.success('AI analysis complete');
+      const { data } = await api.post(`/anomaly-detection/${selectedItem.id}/analyze`);
+      setSelectedItem(data.record || data.data || data);
+      if (data.unavailable) toast('AI provider unavailable; no analysis was saved.');
+      else toast.success('AI analysis complete');
       fetchItems();
     } catch {
       toast.error('AI analysis failed');
@@ -128,8 +129,8 @@ export default function AnomalyDetectionPage() {
             </thead>
             <tbody>
               {items.map(item => (
-                <tr key={item._id} onClick={() => handleRowClick(item)}
-                  className={selectedItem?._id === item._id ? 'row-selected' : ''}
+                <tr key={item.id} onClick={() => handleRowClick(item)}
+                  className={selectedItem?.id === item.id ? 'row-selected' : ''}
                   style={{ cursor: 'pointer' }}>
                   <td>{item.meter_id}</td>
                   <td>{item.customer_name}</td>

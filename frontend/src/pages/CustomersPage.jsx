@@ -26,7 +26,7 @@ export default function CustomersPage() {
     setLoading(true);
     try {
       const { data } = await api.get('/api/customers');
-      setItems(Array.isArray(data) ? data : data.data || []);
+      setItems(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []);
     } catch {
       toast.error('Failed to load customers');
     } finally {
@@ -34,7 +34,7 @@ export default function CustomersPage() {
     }
   };
 
-  const handleSelect = (item) => setSelected(selected?._id === item._id ? null : item);
+  const handleSelect = (item) => setSelected(selected?.id === item.id ? null : item);
 
   const openCreate = () => {
     setForm({ ...emptyForm });
@@ -64,7 +64,7 @@ export default function CustomersPage() {
   const handleDelete = async () => {
     if (!selected || !window.confirm('Delete this customer?')) return;
     try {
-      await api.delete(`/api/customers/${selected._id}`);
+      await api.delete(`/api/customers/${selected.id}`);
       toast.success('Customer deleted');
       setSelected(null);
       fetchItems();
@@ -77,7 +77,7 @@ export default function CustomersPage() {
     e.preventDefault();
     try {
       if (editing) {
-        await api.put(`/api/customers/${selected._id}`, form);
+        await api.put(`/api/customers/${selected.id}`, form);
         toast.success('Customer updated');
       } else {
         await api.post('/api/customers', form);
@@ -124,8 +124,8 @@ export default function CustomersPage() {
                 <tr><td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: '#7a8ba8' }}>No customers found</td></tr>
               ) : items.map(item => (
                 <tr
-                  key={item._id}
-                  className={selected?._id === item._id ? 'row-selected' : ''}
+                  key={item.id}
+                  className={selected?.id === item.id ? 'row-selected' : ''}
                   onClick={() => handleSelect(item)}
                   style={{ cursor: 'pointer' }}
                 >

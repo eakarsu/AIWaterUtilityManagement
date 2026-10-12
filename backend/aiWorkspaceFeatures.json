@@ -1,0 +1,100 @@
+[
+  {
+    "name": "ComputerVisionPipeInspectionFromCameraFeedsPage",
+    "id": "gap-ai-aiwaterutilitymanagement/computer-vision-pipe-inspection-from-camera-feeds",
+    "title": "Computer-vision pipe inspection from camera feeds",
+    "description": "Prepare a professional advisory report for computer-vision pipe inspection from camera feeds using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "CustomerBillingAndMeterToCashFlowPage",
+    "id": "gap-nonai-aiwaterutilitymanagement/customer-billing-and-meter-to-cash-flow",
+    "title": "Customer billing and meter-to-cash flow",
+    "description": "Prepare a professional advisory report for customer billing and meter-to-cash flow using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "CustomerSegmentDemandModelingPage",
+    "id": "gap-ai-aiwaterutilitymanagement/customer-segment-demand-modeling",
+    "title": "Customer-segment demand modeling",
+    "description": "Prepare a professional advisory report for customer-segment demand modeling using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "FullGisMapIntegrationForPipeNetworkPage",
+    "id": "gap-nonai-aiwaterutilitymanagement/full-gis-map-integration-for-pipe-network",
+    "title": "Full GIS map integration for pipe network",
+    "description": "Prepare a professional advisory report for full gis map integration for pipe network using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "PermitregulatoryTrackingAndReportingPage",
+    "id": "gap-nonai-aiwaterutilitymanagement/permitregulatory-tracking-and-reporting",
+    "title": "Permit/regulatory tracking and reporting",
+    "description": "Prepare a professional advisory report for permit/regulatory tracking and reporting using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "PreventiveMaintenanceSchedulingAiPage",
+    "id": "gap-ai-aiwaterutilitymanagement/preventive-maintenance-scheduling-ai",
+    "title": "Preventive maintenance scheduling AI",
+    "description": "Prepare a professional advisory report for preventive maintenance scheduling ai using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "PublicFacingTransparencyPortalPage",
+    "id": "gap-nonai-aiwaterutilitymanagement/public-facing-transparency-portal",
+    "title": "Public-facing transparency portal",
+    "description": "Prepare a professional advisory report for public-facing transparency portal using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "ServiceDisruptionNotificationSmsemailPage",
+    "id": "gap-nonai-aiwaterutilitymanagement/service-disruption-notification-smsemail",
+    "title": "Service disruption notification (SMS/email)",
+    "description": "Prepare a professional advisory report for service disruption notification (sms/email) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "EmergencyResponseIntegrationForMainBreaksCfsPage",
+    "id": "cfs-aiwaterutilitymanagement/emergency-response-integration-for-main-breaks",
+    "title": "Emergency response integration for main breaks",
+    "description": "Prepare a reviewable water utility advisory report for emergency response integration for main breaks. Use actual utility records and verify illustrative examples before operational action.",
+    "samples": []
+  },
+  {
+    "name": "MeterAnalyticsDrivingConservationIncentiveProgramsCfsPage",
+    "id": "cfs-aiwaterutilitymanagement/meter-analytics-driving-conservation-incentive-programs",
+    "title": "Meter analytics driving conservation incentive programs",
+    "description": "Prepare a reviewable water utility advisory report for meter analytics driving conservation incentive programs. Use actual utility records and verify illustrative examples before operational action.",
+    "samples": []
+  },
+  {
+    "name": "PublicWaterQualityDashboardCfsPage",
+    "id": "cfs-aiwaterutilitymanagement/public-water-quality-dashboard",
+    "title": "Public water quality dashboard",
+    "description": "Prepare a reviewable water utility advisory report for public water quality dashboard. Use actual utility records and verify illustrative examples before operational action.",
+    "samples": []
+  },
+  {
+    "name": "RealTimeMultiSensorFusionFlowPressureChlorineTurbidiCfsPage",
+    "id": "cfs-aiwaterutilitymanagement/real-time-multi-sensor-fusion-flow-pressure-chlorine-turbidi",
+    "title": "Real-time multi-sensor fusion (flow, pressure, chlorine, turbidity) for anomaly detection",
+    "description": "Prepare a reviewable water utility advisory report for real-time multi-sensor fusion (flow, pressure, chlorine, turbidity) for anomaly detection. Use actual utility records and verify illustrative examples before operational action.",
+    "samples": []
+  },
+  {
+    "name": "SmartMeterRolloutOrchestrationWithHandOffToBillingCfsPage",
+    "id": "cfs-aiwaterutilitymanagement/smart-meter-rollout-orchestration-with-hand-off-to-billing",
+    "title": "Smart meter rollout orchestration with hand-off to billing",
+    "description": "Prepare a reviewable water utility advisory report for smart meter rollout orchestration with hand-off to billing. Use actual utility records and verify illustrative examples before operational action.",
+    "samples": []
+  },
+  {
+    "name": "WaterDemandNowcastingFromWeatherEventsTimeOfDayCfsPage",
+    "id": "cfs-aiwaterutilitymanagement/water-demand-nowcasting-from-weather-events-time-of-day",
+    "title": "Water demand nowcasting from weather + events + time-of-day",
+    "description": "Prepare a reviewable water utility advisory report for water demand nowcasting from weather + events + time-of-day. Use actual utility records and verify illustrative examples before operational action.",
+    "samples": []
+  }
+]

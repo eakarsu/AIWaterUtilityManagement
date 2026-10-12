@@ -27,7 +27,7 @@ export default function PipeInventoryPage() {
     try {
       setLoading(true);
       const res = await api.get('/api/pipe-inventory');
-      setPipes(res.data);
+      setPipes(Array.isArray(res.data) ? res.data : Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       toast.error('Failed to load pipe inventory');
     } finally {

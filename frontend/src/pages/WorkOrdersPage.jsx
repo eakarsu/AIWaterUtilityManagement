@@ -26,7 +26,7 @@ export default function WorkOrdersPage() {
     setLoading(true);
     try {
       const { data } = await api.get('/api/work-orders');
-      setItems(Array.isArray(data) ? data : data.data || []);
+      setItems(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []);
     } catch {
       toast.error('Failed to load work orders');
     } finally {
@@ -34,7 +34,7 @@ export default function WorkOrdersPage() {
     }
   };
 
-  const handleSelect = (item) => setSelected(selected?._id === item._id ? null : item);
+  const handleSelect = (item) => setSelected(selected?.id === item.id ? null : item);
 
   const openCreate = () => {
     setForm({ ...emptyForm });
@@ -66,7 +66,7 @@ export default function WorkOrdersPage() {
   const handleDelete = async () => {
     if (!selected || !window.confirm('Delete this work order?')) return;
     try {
-      await api.delete(`/api/work-orders/${selected._id}`);
+      await api.delete(`/api/work-orders/${selected.id}`);
       toast.success('Work order deleted');
       setSelected(null);
       fetchItems();
@@ -79,7 +79,7 @@ export default function WorkOrdersPage() {
     e.preventDefault();
     try {
       if (editing) {
-        await api.put(`/api/work-orders/${selected._id}`, form);
+        await api.put(`/api/work-orders/${selected.id}`, form);
         toast.success('Work order updated');
       } else {
         await api.post('/api/work-orders', form);
@@ -132,8 +132,8 @@ export default function WorkOrdersPage() {
                 <tr><td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#7a8ba8' }}>No work orders found</td></tr>
               ) : items.map(item => (
                 <tr
-                  key={item._id}
-                  className={selected?._id === item._id ? 'row-selected' : ''}
+                  key={item.id}
+                  className={selected?.id === item.id ? 'row-selected' : ''}
                   onClick={() => handleSelect(item)}
                   style={{ cursor: 'pointer' }}
                 >

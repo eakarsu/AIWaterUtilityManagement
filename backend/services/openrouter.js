@@ -17,7 +17,7 @@ function parseAIJson(text) {
 
 async function callOpenRouter(messages) {
   if (!OPENROUTER_API_KEY || !OPENROUTER_MODEL || !OPENROUTER_BASE_URL) {
-    throw new Error('OpenRouter configuration is required');
+    throw Object.assign(new Error('OpenRouter configuration is required'), { code: 'AI_PROVIDER_UNAVAILABLE' });
   }
   const startTime = Date.now();
   const response = await axios.post(`${OPENROUTER_BASE_URL}/chat/completions`, {
@@ -31,7 +31,11 @@ async function callOpenRouter(messages) {
       'HTTP-Referer': process.env.CLIENT_URL || 'http://localhost:5173',
       'X-Title': 'AI Water Utility Management'
     }
-  });
+  }).catch((error) => { throw Object.assign(error, { code: 'AI_PROVIDER_UNAVAILABLE' }); });
+
+  if (!response.data?.choices?.[0]?.message?.content) {
+    throw Object.assign(new Error('OpenRouter returned an empty response'), { code: 'AI_PROVIDER_UNAVAILABLE' });
+  }
 
   const content = response.data.choices[0].message.content;
   const processingTimeMs = Date.now() - startTime;

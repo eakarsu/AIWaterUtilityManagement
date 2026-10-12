@@ -26,7 +26,7 @@ export default function ReservoirsPage() {
     try {
       setLoading(true);
       const res = await api.get('/api/reservoirs');
-      setReservoirs(res.data);
+      setReservoirs(Array.isArray(res.data) ? res.data : Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       toast.error('Failed to load reservoirs');
     } finally {

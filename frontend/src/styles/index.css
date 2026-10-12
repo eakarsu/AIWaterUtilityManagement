@@ -743,6 +743,7 @@ tbody tr:nth-child(even):hover {
   top: 0;
   right: 0;
   bottom: 0;
+  overflow-y: auto;
   width: 520px;
   max-width: 90vw;
   background: var(--bg-sidebar);

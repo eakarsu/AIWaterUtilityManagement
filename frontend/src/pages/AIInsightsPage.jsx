@@ -1,3 +1,5 @@
+import NativeAIControls from "../components/NativeAIControls.jsx";
+import FormattedAIReport from "../components/FormattedAIReport";
 import React, { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -23,7 +25,7 @@ const TABS = [
 const DEFAULTS = {
   leak: {
     sensorReadings: '{"pressure_psi":42,"flow_gpm":210,"normal_pressure":58,"normal_flow":190}',
-    pipeSegment: '{"id":"P-104","material":"cast-iron","installed":1972,"length_ft":840}',
+    pipeSegment: '{"material":"cast-iron","installed":1972,"length_ft":840}',
     recentEvents: '[{"date":"2024-08-12","type":"pressure_drop"}]',
   },
   demand: {
@@ -40,8 +42,8 @@ const DEFAULTS = {
     complianceLimits: '{"chlorine_ppm":[0.2,4.0],"turbidity_ntu":1.0}',
   },
   aging: {
-    pipes: '[{"id":"P-104","material":"cast-iron","age":53,"breaks_per_mile":0.4}]',
-    pumpStations: '[{"id":"PS-3","installed":1985,"failures_24m":2}]',
+    pipes: '[{"material":"cast-iron","age":53,"breaks_per_mile":0.4}]',
+    pumpStations: '[{"installed":1985,"failures_24m":2}]',
     breakHistory: '[{"year":2023,"count":18},{"year":2024,"count":21}]',
     budget: '2500000',
   },
@@ -59,7 +61,7 @@ const DEFAULTS = {
     goals: '["cost","compliance","energy"]',
   },
   anomaly: {
-    meterId: 'M-2207',
+    meterId: '',
     customerName: 'Acme Tenants LLC',
     readingDate: '2024-09-30',
     consumptionGallons: '48000',
@@ -166,7 +168,8 @@ export default function AIInsightsPage() {
       const payload = buildPayload(tab, form);
       const { data } = await api.post(current.endpoint, payload);
       setResult(data);
-      toast.success('AI analysis complete');
+      if (data.unavailable) toast('AI provider unavailable; no analysis was saved.');
+      else toast.success('AI analysis complete');
     } catch (err) {
       const status = err.response?.status;
       const msg = err.response?.data?.error || err.message || 'Request failed';
@@ -235,7 +238,7 @@ export default function AIInsightsPage() {
   };
 
   return (
-    <div>
+    <NativeAIControls busy={loading} context="WaterUtilityManagement"><div>
       <div className="page-header">
         <div>
           <h1><Sparkles size={24} /> AI Insights</h1>
@@ -263,9 +266,9 @@ export default function AIInsightsPage() {
               <div className="form-group" key={k}>
                 <label>{label}</label>
                 {rows > 1 ? (
-                  <textarea rows={rows} value={form[k] || ''} onChange={setField(k)} />
+                  <textarea data-ai-field={k} rows={rows} value={form[k] || ''} onChange={setField(k)} />
                 ) : (
-                  <input value={form[k] || ''} onChange={setField(k)} />
+                  <input data-ai-field={k} value={form[k] || ''} onChange={setField(k)} />
                 )}
               </div>
             ))}
@@ -291,11 +294,9 @@ export default function AIInsightsPage() {
         <div className="card" style={{ padding: 20 }}>
           <h3>Result</h3>
           {result.model && <p style={{ fontSize: 12, color: '#7a8ba8' }}>Model: {result.model}</p>}
-          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 13, background: '#0f172a08', padding: 12, borderRadius: 8 }}>
-            {JSON.stringify(result.result || result, null, 2)}
-          </pre>
+          <FormattedAIReport response={result.result || result} />
         </div>
       )}
-    </div>
+    </div></NativeAIControls>
   );
 }

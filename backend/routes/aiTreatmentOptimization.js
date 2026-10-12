@@ -3,13 +3,14 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const aiRateLimiter = require('../middleware/aiRateLimiter');
 const { callOpenRouter, parseAIJson, persistAIResult } = require('../services/openrouter');
+const { sendIfUnavailable } = require('../services/aiUnavailable');
 
 // POST /api/ai/treatment-optimization
 // Text-only AI add-on: takes process snapshot, returns optimization plan in JSON
 router.post('/', auth, aiRateLimiter, async (req, res) => {
   try {
     if (!process.env.OPENROUTER_API_KEY) {
-      return res.status(503).json({ error: 'AI service unavailable. Set OPENROUTER_API_KEY on the backend and restart.' });
+      return sendIfUnavailable(res, { code: 'AI_PROVIDER_UNAVAILABLE' });
     }
 
     const {
@@ -77,6 +78,7 @@ Respond with JSON: {
     });
     res.json({ result: parsed, model: result.model, tokensUsed: result.tokensUsed, processingTimeMs: result.processingTimeMs });
   } catch (err) {
+    if (await sendIfUnavailable(res, err)) return;
     console.error('Treatment optimization AI error:', err.message);
     res.status(500).json({ error: err.message });
   }

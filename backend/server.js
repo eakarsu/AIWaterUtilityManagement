@@ -17,7 +17,9 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
 
 const app = express();
 const PORT = process.env.PORT || process.env.BACKEND_PORT || 3001;
-const generatedRoutesEnabled = process.env.ENABLE_GENERATED_FEATURES === 'true' && process.env.NODE_ENV !== 'production';
+// The native record and AI pages call these routes in development. An explicit
+// opt-out still disables prototypes, and production keeps its existing guard.
+const generatedRoutesEnabled = process.env.ENABLE_GENERATED_FEATURES !== 'false' && process.env.NODE_ENV !== 'production';
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
@@ -57,6 +59,14 @@ if (generatedRoutesEnabled) {
   generatedRoutes.forEach(([mount, modulePath]) => app.use(mount, require(modulePath)));
 }
 
+
+// Advisory AI reports only; native execution and approval routes stay unchanged.
+const aiWorkspaceSupport = require("./aiWorkspaceAdapters.cjs");
+const aiWorkspaceDatabase = require("./db/index.js").pool;
+app.use('/api/report-workspace', require("./aiWorkspace.cjs").createAIWorkspaceRouter({
+  pool: aiWorkspaceDatabase, authenticateToken: require("./middleware/auth.js"),
+  aiRateLimiter: aiWorkspaceSupport.createWorkspaceLimiter(), features: require("./aiWorkspaceFeatures.json"),
+}));
 app.use((req, res) => res.status(404).json({ error: 'not found' }));
 app.use((err, req, res, next) => {
   console.error('Unhandled request error:', err.message);

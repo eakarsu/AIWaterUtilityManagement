@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const aiRateLimiter = require('../middleware/aiRateLimiter');
 const { callOpenRouter, parseAIJson, persistAIResult } = require('../services/openrouter');
+const { sendIfUnavailable } = require('../services/aiUnavailable');
 
 // POST /api/ai/water-quality-risk
 router.post('/', auth, aiRateLimiter, async (req, res) => {
@@ -17,6 +18,7 @@ router.post('/', auth, aiRateLimiter, async (req, res) => {
     await persistAIResult({ featureType: 'water-quality-risk', entityType: 'location', entityId: location?.id, userId: req.user?.id, inputData: { location }, result: parsed, model: result.model, tokensUsed: result.tokensUsed, processingTimeMs: result.processingTimeMs });
     res.json({ result: parsed, model: result.model, tokensUsed: result.tokensUsed, processingTimeMs: result.processingTimeMs });
   } catch (err) {
+    if (await sendIfUnavailable(res, err)) return;
     console.error('Water quality risk error:', err.message);
     res.status(500).json({ error: err.message });
   }

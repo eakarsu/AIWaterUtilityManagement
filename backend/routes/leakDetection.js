@@ -4,6 +4,7 @@ const db = require('../db');
 const auth = require('../middleware/auth');
 const aiRateLimiter = require('../middleware/aiRateLimiter');
 const { callOpenRouter, parseAIJson, persistAIResult } = require('../services/openrouter');
+const { sendIfUnavailable } = require('../services/aiUnavailable');
 
 // GET /api/leak-detection - list all with pagination
 router.get('/', auth, async (req, res) => {
@@ -188,6 +189,7 @@ Respond with this JSON structure:
 
     res.json({ success: true, analysis: parsedResult, raw: aiResult.content, record: updated.rows[0] });
   } catch (err) {
+    if (await sendIfUnavailable(res, err, { db, table: 'leak_detections', id: req.params.id })) return;
     console.error('Error analyzing leak detection:', err);
     res.status(500).json({ error: 'AI analysis failed', details: err.message });
   }

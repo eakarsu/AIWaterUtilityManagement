@@ -39,7 +39,7 @@ export default function WaterQualityPage() {
     try {
       setLoading(true);
       const { data } = await api.get('/water-quality');
-      setItems(Array.isArray(data) ? data : data.data || []);
+      setItems(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []);
     } catch (err) {
       toast.error('Failed to load water quality records');
     } finally {
@@ -118,12 +118,13 @@ export default function WaterQualityPage() {
     try {
       setAnalyzing(true);
       const { data } = await api.post(`/water-quality/${selectedItem._id || selectedItem.id}/analyze`);
-      const updated = data.data || data;
+      const updated = data.record || data.data || data;
       setSelectedItem(updated);
-      setItems((prev) =>
+      if (!data.unavailable) setItems((prev) =>
         prev.map((item) => ((item._id || item.id) === (updated._id || updated.id) ? updated : item))
       );
-      toast.success('AI analysis complete');
+      if (data.unavailable) toast('AI provider unavailable; no analysis was saved.');
+      else toast.success('AI analysis complete');
     } catch (err) {
       toast.error(err.response?.data?.error || 'AI analysis failed');
     } finally {

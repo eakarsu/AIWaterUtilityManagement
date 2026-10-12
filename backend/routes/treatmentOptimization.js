@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
 const axios = require('axios');
+const { sendIfUnavailable } = require('../services/aiUnavailable');
 
 // GET /api/treatment-optimization - list all
 router.get('/', auth, async (req, res) => {
@@ -143,6 +144,7 @@ Please provide a comprehensive treatment optimization analysis including:
 
 Format your response in clear, labeled sections.`;
 
+    if (!process.env.OPENROUTER_API_KEY) throw Object.assign(new Error('OpenRouter configuration is required'), { code: 'AI_PROVIDER_UNAVAILABLE' });
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
       model: process.env.OPENROUTER_MODEL,
       messages: [{ role: 'user', content: promptText }]
@@ -151,9 +153,10 @@ Format your response in clear, labeled sections.`;
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json'
       }
-    });
+    }).catch((error) => { throw Object.assign(error, { code: 'AI_PROVIDER_UNAVAILABLE' }); });
 
-    const aiResult = response.data.choices[0].message.content;
+    const aiResult = response.data?.choices?.[0]?.message?.content;
+    if (!aiResult) throw Object.assign(new Error('OpenRouter returned an empty response'), { code: 'AI_PROVIDER_UNAVAILABLE' });
 
     await db.query('UPDATE treatment_optimization SET ai_analysis = $1 WHERE id = $2', [aiResult, req.params.id]);
 
@@ -161,6 +164,7 @@ Format your response in clear, labeled sections.`;
 
     res.json({ analysis: aiResult, record: updated.rows[0] });
   } catch (err) {
+    if (await sendIfUnavailable(res, err, { db, table: 'treatment_optimization', id: req.params.id })) return;
     console.error('Error analyzing treatment optimization:', err);
     res.status(500).json({ error: 'AI analysis failed', details: err.message });
   }

@@ -61,7 +61,7 @@ export default function InfrastructureAgingPage() {
   const handleDelete = async () => {
     if (!window.confirm(`Delete asset ${selectedItem.asset_id}?`)) return;
     try {
-      await api.delete(`/infrastructure-aging/${selectedItem._id}`);
+      await api.delete(`/infrastructure-aging/${selectedItem.id}`);
       toast.success('Asset deleted');
       setShowDetail(false);
       setSelectedItem(null);
@@ -75,7 +75,7 @@ export default function InfrastructureAgingPage() {
     e.preventDefault();
     try {
       if (editMode) {
-        const { data } = await api.put(`/infrastructure-aging/${selectedItem._id}`, formData);
+        const { data } = await api.put(`/infrastructure-aging/${selectedItem.id}`, formData);
         toast.success('Asset updated');
         setSelectedItem(data);
       } else {
@@ -92,9 +92,10 @@ export default function InfrastructureAgingPage() {
   const handleAnalyze = async () => {
     setAnalyzing(true);
     try {
-      const { data } = await api.post(`/infrastructure-aging/${selectedItem._id}/analyze`);
-      setSelectedItem(data);
-      toast.success('AI analysis complete');
+      const { data } = await api.post(`/infrastructure-aging/${selectedItem.id}/analyze`);
+      setSelectedItem(data.record || data.data || data);
+      if (data.unavailable) toast('AI provider unavailable; no analysis was saved.');
+      else toast.success('AI analysis complete');
       fetchItems();
     } catch {
       toast.error('AI analysis failed');
@@ -129,8 +130,8 @@ export default function InfrastructureAgingPage() {
             </thead>
             <tbody>
               {items.map(item => (
-                <tr key={item._id} onClick={() => handleRowClick(item)}
-                  className={selectedItem?._id === item._id ? 'row-selected' : ''}
+                <tr key={item.id} onClick={() => handleRowClick(item)}
+                  className={selectedItem?.id === item.id ? 'row-selected' : ''}
                   style={{ cursor: 'pointer' }}>
                   <td>{item.asset_id}</td>
                   <td>{item.asset_type}</td>

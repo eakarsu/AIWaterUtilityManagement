@@ -16,7 +16,7 @@ export default function TariffRulesEditor() {
   const load = () => {
     setLoading(true);
     api.get('/custom-views/tariffs')
-      .then(r => setRows(r.data.tariffs || []))
+      .then(r => setRows(Array.isArray(r.data?.tariffs) ? r.data.tariffs : []))
       .catch(() => toast.error('Failed to load tariffs'))
       .finally(() => setLoading(false));
   };
