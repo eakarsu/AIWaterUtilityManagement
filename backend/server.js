@@ -35,6 +35,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api', auth);
 app.use('/api/governance', governanceRouter);
+app.use('/api/feature-pack', require('./routes/featurePack'));
 app.use('/api/runtime-ai/leak-advice', require('./routes/aiLeakAnalyzer'));
 
 const operationalRoutes = [

@@ -10,11 +10,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const submitLogin = async (loginEmail, loginPassword) => {
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/login', { email, password });
+      const { data } = await api.post('/auth/login', { email: loginEmail, password: loginPassword });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       toast.success('Welcome back!');
@@ -23,6 +22,21 @@ export default function LoginPage() {
       toast.error(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await submitLogin(email, password);
+  };
+
+  const handleDemoLogin = async () => {
+    const demoEmail = import.meta.env.VITE_DEMO_EMAIL || '';
+    const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || '';
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    if (demoEmail && demoPassword) {
+      await submitLogin(demoEmail, demoPassword);
     }
   };
 
@@ -154,11 +168,8 @@ export default function LoginPage() {
 
           <button
             type="button"
-            onClick={() => {
-              setEmail(import.meta.env.VITE_DEMO_EMAIL || '');
-              setPassword(import.meta.env.VITE_DEMO_PASSWORD || '');
-            }}
-            disabled={!import.meta.env.VITE_DEMO_EMAIL || !import.meta.env.VITE_DEMO_PASSWORD}
+            onClick={handleDemoLogin}
+            disabled={loading || !import.meta.env.VITE_DEMO_EMAIL || !import.meta.env.VITE_DEMO_PASSWORD}
             aria-label="Fill Demo Credentials"
             style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
           >

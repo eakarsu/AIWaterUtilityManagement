@@ -9,7 +9,8 @@
     "db:init": "psql -v ON_ERROR_STOP=1 -f db/schema.sql",
     "db:schema": "psql -v ON_ERROR_STOP=1 -f db/schema.sql",
     "db:seed": "psql -v ON_ERROR_STOP=1 -f db/seed.sql",
-    "create-admin": "node scripts/createAdmin.js"
+    "create-admin": "node scripts/createAdmin.js",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "axios": "^1.7.2",
